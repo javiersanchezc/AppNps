@@ -76,6 +76,7 @@ public class CsvToSqlServerWPulseCallbacksExport {
             sql += (i == 0) ? "?" : ", ?";
         }
         sql += ")";
+        System.out.println("sql = " + sql);
         return sql;
     }
 

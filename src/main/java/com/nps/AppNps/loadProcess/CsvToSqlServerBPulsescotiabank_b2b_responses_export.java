@@ -1,10 +1,7 @@
 package com.nps.AppNps.loadProcess;
-
 import com.opencsv.CSVReader;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.InputStream;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -18,7 +15,7 @@ public class CsvToSqlServerBPulsescotiabank_b2b_responses_export {
     private String jdbcUrl;
     private String inputFilePathwm_bPulse_Response_Export;
     private String tableNamebPulse_bPulse_Response_Export;
-
+    private String errorFilePath;
     public CsvToSqlServerBPulsescotiabank_b2b_responses_export() {
         loadProperties();
     }
@@ -35,7 +32,7 @@ public class CsvToSqlServerBPulsescotiabank_b2b_responses_export {
             inputFilePathwm_bPulse_Response_Export = properties.getProperty("inputFilePathwm_bPulse_Response_Export");
             tableNamebPulse_bPulse_Response_Export = properties.getProperty("tableNamebPulse_bPulse_Response_Export");
             jdbcUrl = properties.getProperty("jdbcUrl");
-
+            errorFilePath = properties.getProperty("errorFilePath");
         } catch (Exception e) {
             System.err.println("Error al leer el archivo de propiedades: " + e.getMessage());
             e.printStackTrace();
@@ -68,12 +65,11 @@ public class CsvToSqlServerBPulsescotiabank_b2b_responses_export {
 
                         setParameters(preparedStatement, row, headers.length);
                         preparedStatement.executeUpdate();
-                        System.out.println("row = " + row);
                         System.out.println("Row inserted successfully.");
                     } catch (Exception e) {
                         // Registrar el error y continuar con la siguiente línea
-                        System.err.println("Error al procesar línea: " + row);
-                        System.err.println("Excepción: " + e);
+                        e.printStackTrace();
+                        logErrorRecord(row);
                     }
                 }
 
@@ -88,6 +84,7 @@ public class CsvToSqlServerBPulsescotiabank_b2b_responses_export {
             e.printStackTrace();
         }
     }
+
     private static boolean isNumeric(String value) {
         try {
             Integer.parseInt(value);
@@ -110,7 +107,6 @@ public class CsvToSqlServerBPulsescotiabank_b2b_responses_export {
         String sql = "INSERT INTO " + tableNamebPulse_bPulse_Response_Export + " VALUES (";
         for (int i = 0; i < headers.length; i++) {
             sql += (i == 0) ? "?" : ", ?";
-
         }
         sql += ")";
         return sql;
@@ -123,6 +119,17 @@ public class CsvToSqlServerBPulsescotiabank_b2b_responses_export {
             } else {
                 preparedStatement.setNull(i + 1, java.sql.Types.VARCHAR);
             }
+        }
+    }
+    private void logErrorRecord(String[] values) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(errorFilePath, true))) {
+            // Append the error record to the error file
+            for (String value : values) {
+                writer.write(value + ",");
+            }
+            writer.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

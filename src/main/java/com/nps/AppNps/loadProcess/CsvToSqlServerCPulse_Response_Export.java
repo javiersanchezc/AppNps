@@ -1,13 +1,8 @@
 package com.nps.AppNps.loadProcess;
-
 import com.opencsv.CSVReader;
 
-import java.io.FileReader;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.io.*;
+import java.sql.*;
 import java.util.Properties;
 
 public class CsvToSqlServerCPulse_Response_Export {
@@ -15,6 +10,7 @@ public class CsvToSqlServerCPulse_Response_Export {
     private String jdbcUrl;
     private String inputFilePathwm_cPulse_response_export;
     private String tableNamecPulse_response_export;
+    private String errorFilePath;
 
     public CsvToSqlServerCPulse_Response_Export() {
         loadProperties();
@@ -32,6 +28,7 @@ public class CsvToSqlServerCPulse_Response_Export {
             inputFilePathwm_cPulse_response_export = properties.getProperty("inputFilePathwm_cPulse_response_export");
             tableNamecPulse_response_export = properties.getProperty("tableNamecPulse_response_export");
             jdbcUrl = properties.getProperty("jdbcUrl");
+            errorFilePath = properties.getProperty("errorFilePath");
 
         } catch (Exception e) {
             System.err.println("Error al leer el archivo de propiedades: " + e.getMessage());
@@ -50,8 +47,13 @@ public class CsvToSqlServerCPulse_Response_Export {
             try (PreparedStatement preparedStatement = connection.prepareStatement(insertionSql)) {
                 String[] row;
                 while ((row = csvReader.readNext()) != null) {
-                    setParameters(preparedStatement, row);
-                    preparedStatement.executeUpdate();
+                    try {
+                        setParameters(preparedStatement, row);
+                        preparedStatement.executeUpdate();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        logErrorRecord(row);
+                    }
                 }
 
                 System.out.println("Data successfully loaded into SQL Server.");
@@ -78,4 +80,15 @@ public class CsvToSqlServerCPulse_Response_Export {
         }
     }
 
+    private void logErrorRecord(String[] values) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(errorFilePath, true))) {
+            // Append the error record to the error file
+            for (String value : values) {
+                writer.write(value + ",");
+            }
+            writer.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

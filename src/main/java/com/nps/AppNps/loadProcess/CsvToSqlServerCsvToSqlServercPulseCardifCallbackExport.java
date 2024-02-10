@@ -1,14 +1,8 @@
 package com.nps.AppNps.loadProcess;
-
 import com.opencsv.CSVReader;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.io.*;
+import java.sql.*;
 import java.util.Properties;
 
 public class CsvToSqlServerCsvToSqlServercPulseCardifCallbackExport {
@@ -16,6 +10,7 @@ public class CsvToSqlServerCsvToSqlServercPulseCardifCallbackExport {
     private String jdbcUrl;
     private String inputFilePathwm_cPulseInsuranceCardifCallbackExport;
     private String tableNamecPulseInsuranceCardifCallbackExport;
+    private String errorFilePath;
 
     public CsvToSqlServerCsvToSqlServercPulseCardifCallbackExport() {
         loadProperties();
@@ -33,6 +28,7 @@ public class CsvToSqlServerCsvToSqlServercPulseCardifCallbackExport {
             inputFilePathwm_cPulseInsuranceCardifCallbackExport = properties.getProperty("inputFilePathwm_cPulseInsuranceCardifCallbackExport");
             tableNamecPulseInsuranceCardifCallbackExport = properties.getProperty("tableNamecPulseInsuranceCardifCallbackExport");
             jdbcUrl = properties.getProperty("jdbcUrl");
+            errorFilePath = properties.getProperty("errorFilePath");
 
         } catch (Exception e) {
             System.err.println("Error al leer el archivo de propiedades: " + e.getMessage());
@@ -51,17 +47,22 @@ public class CsvToSqlServerCsvToSqlServercPulseCardifCallbackExport {
             try (PreparedStatement preparedStatement = connection.prepareStatement(insertionSql)) {
                 String[] row;
                 while ((row = csvReader.readNext()) != null) {
-                    setParameters(preparedStatement, row);
-                    preparedStatement.executeUpdate();
+                    try {
+                        setParameters(preparedStatement, row);
+                        preparedStatement.executeUpdate();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        logErrorRecord(row);
+                    }
                 }
 
                 System.out.println("Data successfully loaded into SQL Server.");
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } catch (FileNotFoundException error){
+        } catch (FileNotFoundException error) {
             error.printStackTrace();
-            System.out.println("------------"+error);
+            System.out.println("------------" + error);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -83,4 +84,15 @@ public class CsvToSqlServerCsvToSqlServercPulseCardifCallbackExport {
         }
     }
 
+    private void logErrorRecord(String[] values) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(errorFilePath, true))) {
+            // Append the error record to the error file
+            for (String value : values) {
+                writer.write(value + ",");
+            }
+            writer.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Properties;
 
 public class CsvToSqlServerBPulsescotiabank_b2b_callback {
@@ -51,6 +52,12 @@ public class CsvToSqlServerBPulsescotiabank_b2b_callback {
             try (PreparedStatement preparedStatement = connection.prepareStatement(insertionSql)) {
                 String[] row;
                 while ((row = csvReader.readNext()) != null) {
+                    // Verificar si el primer valor es un número
+                    if (!isNumeric(row[0])) {
+                        System.out.println("Skipping line with non-numeric first column: " + Arrays.toString(row));
+                        continue;
+                    }
+
                     setParameters(preparedStatement, row, headers.length);
                     preparedStatement.executeUpdate();
                 }
@@ -65,6 +72,17 @@ public class CsvToSqlServerBPulsescotiabank_b2b_callback {
             e.printStackTrace();
         }
     }
+
+    // Función para verificar si una cadena es numérica
+    private boolean isNumeric(String str) {
+        try {
+            Double.parseDouble(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
 
     private String buildInsertionSql(String[] headers) {
         String sql = "INSERT INTO " + tableNamescotiabank_b2b_callback + " VALUES (";

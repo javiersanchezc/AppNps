@@ -1,18 +1,22 @@
 package com.nps.AppNps.loadProcess;
+
 import com.opencsv.CSVReader;
 
 import java.io.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Properties;
 
-public class CsvToSqlServerCPulse_Response_Export {
+public class CsvToSqlServerCPulseCallBacksExport {
 
     private String jdbcUrl;
-    private String inputFilePathwm_cPulse_response_export;
-    private String tableNamecPulse_response_export;
+    private String inputFilePathwm_cPulse_callback_export;
+    private String tableNamebPulseCallbacksExport;
     private String errorFilePath;
 
-    public CsvToSqlServerCPulse_Response_Export() {
+    public CsvToSqlServerCPulseCallBacksExport() {
         loadProperties();
     }
 
@@ -25,8 +29,8 @@ public class CsvToSqlServerCPulse_Response_Export {
             }
             properties.load(input);
 
-            inputFilePathwm_cPulse_response_export = properties.getProperty("inputFilePathwm_cPulse_response_export");
-            tableNamecPulse_response_export = properties.getProperty("tableNamecPulse_response_export");
+            inputFilePathwm_cPulse_callback_export = properties.getProperty("inputFilePathwm_cPulse_callback_export");
+            tableNamebPulseCallbacksExport = properties.getProperty("tableNamebPulseCallbacksExport");
             jdbcUrl = properties.getProperty("jdbcUrl");
             errorFilePath = properties.getProperty("errorFilePath");
 
@@ -38,7 +42,7 @@ public class CsvToSqlServerCPulse_Response_Export {
 
     public void convertCsvToSqlServer() {
         try (Connection connection = DriverManager.getConnection(jdbcUrl);
-             CSVReader csvReader = new CSVReader(new FileReader(inputFilePathwm_cPulse_response_export))) {
+             CSVReader csvReader = new CSVReader(new FileReader(inputFilePathwm_cPulse_callback_export))) {
 
             String[] headers = csvReader.readNext();
 
@@ -66,7 +70,7 @@ public class CsvToSqlServerCPulse_Response_Export {
     }
 
     private String buildInsertionSql(String[] headers) {
-        String sql = "INSERT INTO " + tableNamecPulse_response_export + " VALUES (";
+        String sql = "INSERT INTO " + tableNamebPulseCallbacksExport + " VALUES (";
         for (int i = 0; i < headers.length; i++) {
             sql += (i == 0) ? "?" : ", ?";
         }

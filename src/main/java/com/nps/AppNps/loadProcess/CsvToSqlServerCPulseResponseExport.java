@@ -1,23 +1,18 @@
 package com.nps.AppNps.loadProcess;
-
 import com.opencsv.CSVReader;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.io.*;
+import java.sql.*;
 import java.util.Properties;
 
-public class CsvToSqlServerBPulse_Invitation_Export {
+public class CsvToSqlServerCPulseResponseExport {
 
     private String jdbcUrl;
-    private String inputFilePathwm_bPulse_Invitation_Export;
-    private String tableNamebPulse_bPulse_Invitation_Export;
+    private String inputFilePathwm_cPulse_response_export;
+    private String tableNamecPulse_response_export;
+    private String errorFilePath;
 
-    public CsvToSqlServerBPulse_Invitation_Export() {
+    public CsvToSqlServerCPulseResponseExport() {
         loadProperties();
     }
 
@@ -30,9 +25,10 @@ public class CsvToSqlServerBPulse_Invitation_Export {
             }
             properties.load(input);
 
-            inputFilePathwm_bPulse_Invitation_Export = properties.getProperty("inputFilePathwm_bPulse_Invitation_Export");
-            tableNamebPulse_bPulse_Invitation_Export = properties.getProperty("tableNamebPulse_bPulse_Invitation_Export");
+            inputFilePathwm_cPulse_response_export = properties.getProperty("inputFilePathwm_cPulse_response_export");
+            tableNamecPulse_response_export = properties.getProperty("tableNamecPulse_response_export");
             jdbcUrl = properties.getProperty("jdbcUrl");
+            errorFilePath = properties.getProperty("errorFilePath");
 
         } catch (Exception e) {
             System.err.println("Error al leer el archivo de propiedades: " + e.getMessage());
@@ -42,7 +38,7 @@ public class CsvToSqlServerBPulse_Invitation_Export {
 
     public void convertCsvToSqlServer() {
         try (Connection connection = DriverManager.getConnection(jdbcUrl);
-             CSVReader csvReader = new CSVReader(new FileReader(inputFilePathwm_bPulse_Invitation_Export))) {
+             CSVReader csvReader = new CSVReader(new FileReader(inputFilePathwm_cPulse_response_export))) {
 
             String[] headers = csvReader.readNext();
 
@@ -51,26 +47,26 @@ public class CsvToSqlServerBPulse_Invitation_Export {
             try (PreparedStatement preparedStatement = connection.prepareStatement(insertionSql)) {
                 String[] row;
                 while ((row = csvReader.readNext()) != null) {
-
-                        setParameters(preparedStatement, row, headers.length);
+                    try {
+                        setParameters(preparedStatement, row);
                         preparedStatement.executeUpdate();
-                        System.out.println("Row inserted successfully.");
-
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        logErrorRecord(row);
+                    }
                 }
 
                 System.out.println("Data successfully loaded into SQL Server.");
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } catch (FileNotFoundException error){
-            error.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private String buildInsertionSql(String[] headers) {
-        String sql = "INSERT INTO " + tableNamebPulse_bPulse_Invitation_Export + " VALUES (";
+        String sql = "INSERT INTO " + tableNamecPulse_response_export + " VALUES (";
         for (int i = 0; i < headers.length; i++) {
             sql += (i == 0) ? "?" : ", ?";
         }
@@ -78,17 +74,21 @@ public class CsvToSqlServerBPulse_Invitation_Export {
         return sql;
     }
 
-    private void setParameters(PreparedStatement preparedStatement, String[] values, int expectedLength) throws SQLException {
-        for (int i = 0; i < expectedLength; i++) {
-            if (i < values.length) {
-                preparedStatement.setString(i + 1, values[i]);
-            } else {
-                preparedStatement.setNull(i + 1, java.sql.Types.VARCHAR);
-            }
+    private void setParameters(PreparedStatement preparedStatement, String[] values) throws SQLException {
+        for (int i = 0; i < values.length; i++) {
+            preparedStatement.setString(i + 1, values[i]);
         }
     }
 
-    private boolean isLastFieldNull(String[] row) {
-        return row[row.length - 1] == null;
+    private void logErrorRecord(String[] values) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(errorFilePath, true))) {
+            // Append the error record to the error file
+            for (String value : values) {
+                writer.write(value + ",");
+            }
+            writer.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

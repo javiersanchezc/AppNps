@@ -59,13 +59,13 @@ public class CsvToSqlServerBPulsescotiabank_b2b_responses_export {
 
                         // Validar si el primer campo es numérico
                         if (!isNumeric(row[0])) {
-                            System.err.println("El primer campo de la línea " + Arrays.toString(row) + " no es numérico.");
+                            System.err.println("El primer campo de la línea " + Arrays.toString(row) + " no es numérico. Saltando línea.");
                             continue;
                         }
 
                         setParameters(preparedStatement, row, headers.length);
                         preparedStatement.executeUpdate();
-                        System.out.println("Row inserted successfully.");
+                        System.out.println("Fila insertada exitosamente.");
                     } catch (Exception e) {
                         // Registrar el error y continuar con la siguiente línea
                         e.printStackTrace();
@@ -73,8 +73,7 @@ public class CsvToSqlServerBPulsescotiabank_b2b_responses_export {
                     }
                 }
 
-
-                System.out.println("Data successfully loaded into SQL Server.");
+                System.out.println("Datos cargados exitosamente en SQL Server.");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -85,9 +84,10 @@ public class CsvToSqlServerBPulsescotiabank_b2b_responses_export {
         }
     }
 
-    private static boolean isNumeric(String value) {
+    // Función para verificar si una cadena es numérica
+    private boolean isNumeric(String str) {
         try {
-            Integer.parseInt(value);
+            Double.parseDouble(str);
             return true;
         } catch (NumberFormatException e) {
             return false;

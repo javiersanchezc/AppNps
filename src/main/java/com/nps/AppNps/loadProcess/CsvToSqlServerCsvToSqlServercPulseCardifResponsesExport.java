@@ -52,7 +52,9 @@ public class CsvToSqlServerCsvToSqlServercPulseCardifResponsesExport {
                 String[] row;
                 while ((row = csvReader.readNext()) != null) {
                     try {
-                        setParameters(preparedStatement, row);
+                        // Especifica el número máximo de columnas que deseas considerar
+                        int maxColumnIndex = 110;  // Ajusta según tus necesidades
+                        setParameters(preparedStatement, row, maxColumnIndex);
                         preparedStatement.executeUpdate();
                     } catch (SQLException e) {
                         e.printStackTrace();
@@ -67,12 +69,10 @@ public class CsvToSqlServerCsvToSqlServercPulseCardifResponsesExport {
         } catch (FileNotFoundException error) {
             error.printStackTrace();
             System.out.println("------------" + error);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
     private String buildInsertionSql(String[] headers) {
         String sql = "INSERT INTO " + tableNamecPulseInsuranceCardifResponsesExport + " VALUES (";
         for (int i = 0; i < headers.length; i++) {
@@ -82,11 +82,12 @@ public class CsvToSqlServerCsvToSqlServercPulseCardifResponsesExport {
         return sql;
     }
 
-    private void setParameters(PreparedStatement preparedStatement, String[] values) throws SQLException {
-        for (int i = 0; i < values.length; i++) {
+    private void setParameters(PreparedStatement preparedStatement, String[] values, int maxColumnIndex) throws SQLException {
+        for (int i = 0; i < values.length && i < preparedStatement.getParameterMetaData().getParameterCount(); i++) {
             preparedStatement.setString(i + 1, values[i]);
         }
     }
+
 
     private void logErrorRecord(String[] values) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(errorFilePath, true))) {

@@ -46,7 +46,6 @@ public class CsvToSqlServerBPulsescotiabank_b2b_callback {
              CSVReader csvReader = new CSVReader(new FileReader(inputFilePathwm_scotiabank_b2b_callback))) {
 
             String[] headers = csvReader.readNext();
-
             String insertionSql = buildInsertionSql(headers);
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(insertionSql)) {
@@ -66,7 +65,7 @@ public class CsvToSqlServerBPulsescotiabank_b2b_callback {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } catch (FileNotFoundException error){
+        } catch (FileNotFoundException error) {
             error.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();

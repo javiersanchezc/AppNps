@@ -41,31 +41,37 @@ public class CsvToSqlServerBPulse_Invitation_Export {
     }
 
     public void convertCsvToSqlServer() {
-        try (Connection connection = DriverManager.getConnection(jdbcUrl);
-             CSVReader csvReader = new CSVReader(new FileReader(inputFilePathwm_bPulse_Invitation_Export))) {
-
+        Connection connection = null;
+        try (CSVReader csvReader = new CSVReader(new FileReader(inputFilePathwm_bPulse_Invitation_Export))) {
+            connection = DriverManager.getConnection(jdbcUrl);
             String[] headers = csvReader.readNext();
-
             String insertionSql = buildInsertionSql(headers);
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(insertionSql)) {
                 String[] row;
                 while ((row = csvReader.readNext()) != null) {
-
-                        setParameters(preparedStatement, row, headers.length);
-                        preparedStatement.executeUpdate();
-                        System.out.println("Row inserted successfully.");
-
+                    setParameters(preparedStatement, row, headers.length);
+                    preparedStatement.executeUpdate();
+                    System.out.println("Row inserted successfully.");
                 }
 
                 System.out.println("Data successfully loaded into SQL Server.");
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } catch (FileNotFoundException error){
+        } catch (FileNotFoundException error) {
             error.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            // Close the connection in the finally block to ensure it gets closed
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

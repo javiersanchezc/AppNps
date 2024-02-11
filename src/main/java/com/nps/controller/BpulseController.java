@@ -28,8 +28,8 @@ public class BpulseController {
     }
 
 
-    @GetMapping("/bPulseCallback")
-    public String getLoad_bPulse_digital_inline_export(
+    @GetMapping("/BPulseCallback")
+    public String getLoad_bPulse_digital_Callback_export(
             @RequestParam(name = "inputFilePath", defaultValue = "C:/data/scotiabank_b2b_callback_to_vm.csv") String inputFilePath,
             @RequestParam(name = "outputFilePath", defaultValue = "C:/data/scotiabank_b2b_callback_to_vm_modified.csv") String outputFilePath) {
 
@@ -39,7 +39,7 @@ public class BpulseController {
         return "scotiabank_b2b_callback";
     }
 
-    @GetMapping("/bPulseInvitation")
+    @GetMapping("/BPulseInvitation")
     public String getLoad_bPulse_Invitation_Export(
             @RequestParam(name = "inputFilePath", defaultValue = "C:/data/scotiabank_b2b_invitations_to_vm.csv") String inputFilePath,
             @RequestParam(name = "outputFilePath", defaultValue = "C:/data/scotiabank_b2b_invitations_to_vm_modified.csv") String outputFilePath) {
@@ -51,7 +51,7 @@ public class BpulseController {
     }
 
 
-    @GetMapping("/bPulseResponse")
+    @GetMapping("/BPulseResponse")
     public String getLoad_cPulse_response_export(
             @RequestParam(name = "inputFilePath", defaultValue = "C:/data/scotiabank_b2b_responses_to_vm.csv") String inputFilePath,
             @RequestParam(name = "outputFilePath", defaultValue = "C:/data/scotiabank_b2b_responses_to_vm_modified.csv") String outputFilePath) {

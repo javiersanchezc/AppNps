@@ -41,11 +41,12 @@ public class CsvToSqlServerBPulse_digital_inline_export {
     }
 
     public void convertCsvToSqlServer() {
-        try (Connection connection = DriverManager.getConnection(jdbcUrl);
-             CSVReader csvReader = new CSVReader(new FileReader(inputFilePathwm_bPulse_digital_inline_export))) {
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection(jdbcUrl);
+            CSVReader csvReader = new CSVReader(new FileReader(inputFilePathwm_bPulse_digital_inline_export));
 
             String[] headers = csvReader.readNext();
-
             String insertionSql = buildInsertionSql(headers);
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(insertionSql)) {
@@ -68,6 +69,16 @@ public class CsvToSqlServerBPulse_digital_inline_export {
             error.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            // Cerrar la conexión en el bloque finally
+            if (connection != null) {
+                try {
+                    connection.close();
+                    System.out.println("connection =  cerrada" );
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

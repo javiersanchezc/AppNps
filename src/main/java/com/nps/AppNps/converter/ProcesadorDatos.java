@@ -6,7 +6,7 @@ import java.io.IOException;
 public class ProcesadorDatos {
 
     public static void main(String[] args) {
-        String rutaArchivo = "C:/data/cabeceraBpulseinvitation.txt";
+        String rutaArchivo = "C:/data/cpulsecabeceras.txt";
 
         try {
             String datosEnUnaFila = procesarArchivo(rutaArchivo);

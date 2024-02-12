@@ -51,6 +51,7 @@ public class CsvToSqlServerCPulseResponseExport {
                         setParameters(preparedStatement, row);
                         preparedStatement.executeUpdate();
                     } catch (SQLException e) {
+
                         e.printStackTrace();
                         logErrorRecord(row);
                     }
@@ -60,7 +61,9 @@ public class CsvToSqlServerCPulseResponseExport {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+
         } catch (Exception e) {
+
             e.printStackTrace();
         }
     }
